@@ -1,170 +1,130 @@
-# 🎭 Playwright
+# 🎮 Match-3 Engine — 梦幻花园 × 梦幻家园
 
-[![npm version](https://img.shields.io/npm/v/playwright.svg)](https://www.npmjs.com/package/playwright) <!-- GEN:chromium-version-badge -->[![Chromium version](https://img.shields.io/badge/chromium-147.0.7727.15-blue.svg?logo=google-chrome)](https://www.chromium.org/Home)<!-- GEN:stop --> <!-- GEN:firefox-version-badge -->[![Firefox version](https://img.shields.io/badge/firefox-148.0.2-blue.svg?logo=firefoxbrowser)](https://www.mozilla.org/en-US/firefox/new/)<!-- GEN:stop --> <!-- GEN:webkit-version-badge -->[![WebKit version](https://img.shields.io/badge/webkit-26.4-blue.svg?logo=safari)](https://webkit.org/)<!-- GEN:stop --> [![Join Discord](https://img.shields.io/badge/join-discord-informational)](https://aka.ms/playwright/discord)
+> 双主题 Match-3 消除引擎，纯 HTML5 Canvas + ES Modules 实现
+> 展示关卡设计能力、道具系统设计与程序化生成技术
 
-## [Documentation](https://playwright.dev) | [API reference](https://playwright.dev/docs/api/class-playwright)
+## 🕹️ 在线试玩
 
-Playwright is a framework for Web Testing and Automation. It allows testing [Chromium](https://www.chromium.org/Home)<sup>1</sup>, [Firefox](https://www.mozilla.org/en-US/firefox/new/) and [WebKit](https://webkit.org/) with a single API. Playwright is built to enable cross-browser web automation that is **ever-green**, **capable**, **reliable**, and **fast**.
+**[→ 点击试玩 Demo](https://klausc06.github.io/match3-game/)**
 
-|          | Linux | macOS | Windows |
-|   :---   | :---: | :---: | :---:   |
-| Chromium<sup>1</sup> <!-- GEN:chromium-version -->147.0.7727.15<!-- GEN:stop --> | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| WebKit <!-- GEN:webkit-version -->26.4<!-- GEN:stop --> | :white_check_mark: | :white_check_mark: | :white_check_mark: |
-| Firefox <!-- GEN:firefox-version -->148.0.2<!-- GEN:stop --> | :white_check_mark: | :white_check_mark: | :white_check_mark: |
+选择「花园物语」或「家园梦想」主题，体验不同的道具和障碍物组合。
 
-Headless execution is supported for all browsers on all platforms. Check out [system requirements](https://playwright.dev/docs/intro#system-requirements) for details.
+## ✨ 核心特性
 
-Looking for Playwright for [Python](https://playwright.dev/python/docs/intro), [.NET](https://playwright.dev/dotnet/docs/intro), or [Java](https://playwright.dev/java/docs/intro)?
+| 特性 | 说明 |
+|------|------|
+| 🎨 **双主题系统** | 花园 / 家园两套完整的图块、道具、障碍物配置 |
+| 💣 **8 种道具** | 鞭炮、3 级炸弹、火箭（横/纵）、彩虹球、纸飞机 |
+| 🧱 **6 种障碍物** | 箱子、锁链、果冻、草地、地毯、溪流 |
+| 🗺️ **程序化关卡** | 对称性棋盘布局 + 加权随机障碍物放置 |
+| 🎯 **确定性随机** | Seed 系统 → 同一种子生成完全相同的棋盘 |
+| ⚡ **连锁引爆** | 道具被波及会触发二次爆炸，形成连锁反应 |
+| 🔄 **无死局保证** | 自动检测可行走法，死局时智能 shuffle |
 
-<sup>1</sup> Playwright uses [Chrome for Testing](https://developer.chrome.com/blog/chrome-for-testing) by default.
+## 📐 设计决策
 
-## Installation
+### 道具系统：分级炸弹设计
 
-Playwright has its own test runner for end-to-end tests, we call it Playwright Test.
-
-### Using init command
-
-The easiest way to get started with Playwright Test is to run the init command.
-
-```Shell
-# Run from your project's root directory
-npm init playwright@latest
-# Or create a new project
-npm init playwright@latest new-project
+```
+匹配长度    花园主题        家园主题         设计意图
+────────────────────────────────────────────────────
+4 连        鞭炮 (十字5格)   火箭 (整行/列)    方向性清除
+5L/T 形     小炸弹 (半径2)   十字炸弹 (21格)   区域清除
+6L/T 形     中炸弹 (半径3)   十字炸弹 (21格)   奖励更长匹配
+7+ 连       大炸弹 (半径4)   十字炸弹 (21格)   极致高光时刻
+5 直线      彩虹球 (全色清除) 彩虹球 (全色清除)  战略性道具
+4 方块      —               纸飞机 (定点)     精确打击特定障碍
 ```
 
-This will create a configuration file, optionally add examples, a GitHub Action workflow and a first test example.spec.ts. You can now jump directly to writing assertions section.
+**设计理念**：花园主题通过 3 级炸弹（RadiusBomb）奖励更长的匹配，创造「追求更大连线」的动机循环；家园主题则提供方向性道具（火箭/纸飞机）鼓励空间思考。
 
-### Manually
+### 障碍物系统：按交互方式分类
 
-Add dependency and install browsers.
+| 类别 | 障碍物 | 交互规则 | 设计意图 |
+|------|--------|----------|----------|
+| **占位型** | 箱子、草地 | 不可移动、不可匹配，被相邻消除破坏 | 阻断路径，迫使绕行 |
+| **覆盖型** | 锁链、果冻 | 附着在图块上，图块可匹配但不可移动 | 限制机动性 |
+| **地形型** | 地毯、溪流 | 不妨碍游戏，但影响计分或视觉 | 增加棋盘丰富度 |
 
-```Shell
-npm i -D @playwright/test
-# install supported browsers
-npx playwright install
+### 程序化 vs 手工设计
+
+选择程序化生成是为了展示**系统设计能力**：
+
+- 使用**加权随机 + 簇状扩散（BFS）** 算法放置障碍物
+- 支持 4 种对称模式（无、左右镜像、上下镜像、四象限对称）
+- 每种障碍可配置权重、HP 范围、是否成簇、簇大小
+- 关卡生成器 253 行代码，支持无限种不同的棋盘布局
+
+> 手工设计适合精调难度曲线（如 Playrix 的做法），程序化适合快速验证机制组合的平衡性。两者互补而非互斥。
+
+## 🏗️ 技术架构
+
+```
+main.js (组装器)
+  ├── config/            游戏常量 + 关卡生成器
+  │   ├── GameConfig     全局参数、主题定义
+  │   ├── LevelGenerator 程序化关卡生成
+  │   ├── Events         事件类型常量
+  │   └── PowerUpTypes   道具/障碍类型常量
+  ├── core/              引擎核心
+  │   ├── Board          棋盘逻辑（纯数据，无渲染）
+  │   ├── board/         棋盘子模块
+  │   │   ├── matching   匹配检测
+  │   │   ├── destruction 消除 + 连锁引爆
+  │   │   ├── gravity    重力下落
+  │   │   ├── grid       填充 + 洗牌
+  │   │   └── obstacles  障碍物交互
+  │   ├── Renderer       Canvas 渲染（PNG 精灵）
+  │   ├── GameLoop       游戏主循环 + 流水线状态机
+  │   ├── EventBus       发布/订阅事件系统
+  │   ├── StateMachine   全局状态管理
+  │   └── InputHandler   触摸/鼠标输入
+  ├── elements/
+  │   └── Tile           图块数据类
+  ├── powerups/          道具系统
+  │   ├── PowerUpFactory 工厂 + 统一 API
+  │   ├── RadiusBomb     参数化炸弹（半径 2/3/4）
+  │   ├── Rocket         行/列火箭
+  │   ├── RainbowBall    彩虹球（全色清除）
+  │   ├── PaperPlane     纸飞机（定点打击）
+  │   └── ...
+  └── ui/
+      └── UIManager      DOM 操作封装
 ```
 
-You can optionally install only selected browsers, see [install browsers](https://playwright.dev/docs/cli#install-browsers) for more details. Or you can install no browsers at all and use existing [browser channels](https://playwright.dev/docs/browsers).
+**设计原则**：
+- 事件驱动：模块间通过 `EventBus` 解耦，零直接依赖
+- 逻辑/渲染分离：`Board` 是纯数据，`Renderer` 只读取不修改
+- 确定性：所有随机操作通过可 seed 的 `Random` 类，支持复现
 
-* [Getting started](https://playwright.dev/docs/intro)
-* [API reference](https://playwright.dev/docs/api/class-playwright)
+## 🔧 本地运行
 
-## Capabilities
+```bash
+# 克隆
+git clone https://github.com/Klausc06/match3-game.git
+cd match3-game
 
-### Resilient • No flaky tests
+# 启动（任选一种）
+npx http-server -p 8081    # 或 python3 -m http.server 8081
+open http://127.0.0.1:8081
 
-**Auto-wait**. Playwright waits for elements to be actionable prior to performing actions. It also has a rich set of introspection events. The combination of the two eliminates the need for artificial timeouts - a primary cause of flaky tests.
-
-**Web-first assertions**. Playwright assertions are created specifically for the dynamic web. Checks are automatically retried until the necessary conditions are met.
-
-**Tracing**. Configure test retry strategy, capture execution trace, videos and screenshots to eliminate flakes.
-
-### No trade-offs • No limits
-
-Browsers run web content belonging to different origins in different processes. Playwright is aligned with the architecture of the modern browsers and runs tests out-of-process. This makes Playwright free of the typical in-process test runner limitations.
-
-**Multiple everything**. Test scenarios that span multiple tabs, multiple origins and multiple users. Create scenarios with different contexts for different users and run them against your server, all in one test.
-
-**Trusted events**. Hover elements, interact with dynamic controls and produce trusted events. Playwright uses real browser input pipeline indistinguishable from the real user.
-
-Test frames, pierce Shadow DOM. Playwright selectors pierce shadow DOM and allow entering frames seamlessly.
-
-### Full isolation • Fast execution
-
-**Browser contexts**. Playwright creates a browser context for each test. Browser context is equivalent to a brand new browser profile. This delivers full test isolation with zero overhead. Creating a new browser context only takes a handful of milliseconds.
-
-**Log in once**. Save the authentication state of the context and reuse it in all the tests. This bypasses repetitive log-in operations in each test, yet delivers full isolation of independent tests.
-
-### Powerful Tooling
-
-**[Codegen](https://playwright.dev/docs/codegen)**. Generate tests by recording your actions. Save them into any language.
-
-**[Playwright inspector](https://playwright.dev/docs/inspector)**. Inspect page, generate selectors, step through the test execution, see click points and explore execution logs.
-
-**[Trace Viewer](https://playwright.dev/docs/trace-viewer)**. Capture all the information to investigate the test failure. Playwright trace contains test execution screencast, live DOM snapshots, action explorer, test source and many more.
-
-Looking for Playwright for [TypeScript](https://playwright.dev/docs/intro), [JavaScript](https://playwright.dev/docs/intro), [Python](https://playwright.dev/python/docs/intro), [.NET](https://playwright.dev/dotnet/docs/intro), or [Java](https://playwright.dev/java/docs/intro)?
-
-## Examples
-
-To learn how to run these Playwright Test examples, check out our [getting started docs](https://playwright.dev/docs/intro).
-
-#### Page screenshot
-
-This code snippet navigates to Playwright homepage and saves a screenshot.
-
-```TypeScript
-import { test } from '@playwright/test';
-
-test('Page Screenshot', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
-  await page.screenshot({ path: `example.png` });
-});
+# 运行测试
+npm test                    # 27 个单元测试
 ```
 
-#### Mobile and geolocation
+支持 URL 参数 `?seed=12345` 指定随机种子，用于复现特定棋盘布局。
 
-This snippet emulates Mobile Safari on a device at given geolocation, navigates to maps.google.com, performs the action and takes a screenshot.
+## 📊 项目指标
 
-```TypeScript
-import { test, devices } from '@playwright/test';
+| 指标 | 数值 |
+|------|------|
+| JS 源码 | 31 文件 / ~4,500 行 |
+| 单元测试 | 27 个，覆盖匹配/消除/道具/障碍/计分 |
+| 外部依赖 | 0（纯 Vanilla JS + Canvas） |
+| 道具类型 | 8 种 |
+| 障碍类型 | 6 种 |
+| 主题 | 2 套（各自独立的图块/道具/障碍配置） |
 
-test.use({
-  ...devices['iPhone 13 Pro'],
-  locale: 'en-US',
-  geolocation: { longitude: 12.492507, latitude: 41.889938 },
-  permissions: ['geolocation'],
-})
+## 📝 更新日志
 
-test('Mobile and geolocation', async ({ page }) => {
-  await page.goto('https://maps.google.com');
-  await page.getByText('Your location').click();
-  await page.waitForRequest(/.*preview\/pwa/);
-  await page.screenshot({ path: 'colosseum-iphone.png' });
-});
-```
-
-#### Evaluate in browser context
-
-This code snippet navigates to example.com, and executes a script in the page context.
-
-```TypeScript
-import { test } from '@playwright/test';
-
-test('Evaluate in browser context', async ({ page }) => {
-  await page.goto('https://www.example.com/');
-  const dimensions = await page.evaluate(() => {
-    return {
-      width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight,
-      deviceScaleFactor: window.devicePixelRatio
-    }
-  });
-  console.log(dimensions);
-});
-```
-
-#### Intercept network requests
-
-This code snippet sets up request routing for a page to log all network requests.
-
-```TypeScript
-import { test } from '@playwright/test';
-
-test('Intercept network requests', async ({ page }) => {
-  // Log and continue all network requests
-  await page.route('**', route => {
-    console.log(route.request().url());
-    route.continue();
-  });
-  await page.goto('http://todomvc.com');
-});
-```
-
-## Resources
-
-* [Documentation](https://playwright.dev)
-* [API reference](https://playwright.dev/docs/api/class-playwright/)
-* [Contribution guide](CONTRIBUTING.md)
-* [Changelog](https://github.com/microsoft/playwright/releases)
+详见 [CHANGELOG.md](./CHANGELOG.md)

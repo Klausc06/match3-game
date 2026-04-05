@@ -2,6 +2,32 @@
 
 此文件用于记录每次任务完成后的修改内容，便于追踪版本与日后优化。
 
+## [2026-04-06] 深度代码优化 + README 重写 (Deep Optimization & README)
+
+### 代码精简 (-439 行)
+
+- 合并 `BombGarden` / `Dynamite` / `Tnt` 为统一的 `RadiusBomb(type, radius)` 类
+- 删除 `destruction.js` 中全部道具组合逻辑（rainbow+bomb 等已不在设计范围）
+- 删除 `Tile.markedForRemoval` 死字段、`basePowerUpCategory()` 无调用者函数
+- 删除 `GameConfig` 中静态 `level.obstacles` 数组和 emoji 字段（已被 LevelGenerator 替代）
+- 删除 `grid.js` 中永远走默认的 `fillMode/ruleSet` 分支
+- 优化 `BombHome.js`：string Set → numeric key 去重
+- 简化 `obstacles.js`：合并 ice/chain/jelly 冗余分支为统一逻辑
+- 精简 `PowerUp.js`、`Rocket.js`、`RainbowBall.js` 冗余注释
+
+### Bug 修复
+
+- **图例面板**：改为根据主题动态显示（花园只显示草地/箱子/锁链/溪流 + 鞭炮/炸弹）
+- **startGame 事件 bug**：修复 MouseEvent 被误传为 `isDemo` 参数导致 `Unknown theme: null`
+- **关卡生成统一**：所有模式（普通/Demo）统一使用 `generateLevel()`
+
+### README 重写
+
+- 替换错误的 Playwright README 为完整的项目文档
+- 包含：设计决策、道具系统理念、架构图、本地运行指南
+
+---
+
 ## [2026-04-06] 程序化关卡生成 + 项目清理 (Procedural Gen & Cleanup)
 
 ### 程序化关卡生成器
