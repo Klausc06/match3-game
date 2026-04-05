@@ -1,0 +1,144 @@
+/* ===== Match-3 — 全局基础样式 (style.css) ===== */
+
+:root {
+  --bg-primary: #0f0c29;
+  --bg-secondary: #302b63;
+  --bg-tertiary: #24243e;
+  --text-primary: #f0f0f5;
+  --text-secondary: rgba(240, 240, 245, 0.7);
+  --accent: #64b5f6;
+  --accent-glow: rgba(100, 181, 246, 0.35);
+  --gold: #FFD700;
+  --danger: #f44336;
+  --success: #4caf50;
+  --glass-bg: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-hover: rgba(255, 255, 255, 0.16);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  background: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary));
+  color: var(--text-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  user-select: none;
+}
+
+/* ===== 画面切换系统 ===== */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  z-index: 10;
+}
+
+/* ===== 通用按钮 ===== */
+.start-btn {
+  display: inline-block;
+  padding: 14px 48px;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: inherit;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), #a78bfa);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 4px 20px var(--accent-glow);
+  margin-bottom: 12px;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 30px var(--accent-glow);
+}
+
+.start-btn:active {
+  transform: scale(0.98);
+}
+
+.leaderboard-btn {
+  display: block;
+  margin: 8px auto 0;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.leaderboard-btn:hover {
+  color: var(--text-primary);
+  background: var(--glass-bg);
+}
+
+.secondary-btn {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-secondary);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.secondary-btn:hover {
+  color: var(--text-primary);
+  background: var(--glass-hover);
+}
+
+/* ===== 通用动画 ===== */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.shake {
+  animation: shake 0.3s ease;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 600px) {
+  .game-title { font-size: 36px; }
+  .title-sub { font-size: 16px; }
+  .end-stats { flex-direction: column; gap: 8px; }
+  .stat-item { flex-direction: row; justify-content: space-between; }
+}

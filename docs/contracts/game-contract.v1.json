@@ -1,0 +1,115 @@
+{
+  "version": "1.1.0",
+  "last_updated": "2026-04-05",
+  "canonical_source": "docs/contracts/game-contract.v1.json",
+  "events": {
+    "BOARD_INITIALIZED": "board:initialized",
+    "BOARD_TILE_SWAPPED": "board:tileSwapped",
+    "BOARD_MATCHED": "board:matched",
+    "BOARD_REMOVED": "board:removed",
+    "BOARD_DROPPED": "board:dropped",
+    "BOARD_REFILLED": "board:refilled",
+    "BOARD_SHUFFLED": "board:shuffled",
+    "BOARD_NO_MATCHES": "board:noMatches",
+    "INPUT_SELECT": "input:select",
+    "INPUT_SWAP": "input:swap",
+    "INPUT_ACTIVE": "input:active",
+    "INPUT_INVALID_SWAP": "input:invalidSwap",
+    "SCORE_UPDATED": "score:updated",
+    "SCORE_COMBO": "score:combo",
+    "TIMER_TICK": "timer:tick",
+    "TIMER_WARNING": "timer:warning",
+    "TIMER_EXPIRED": "timer:expired",
+    "GAME_START": "game:start",
+    "GAME_RESET": "game:reset",
+    "GAME_PAUSE": "game:pause",
+    "GAME_RESUME": "game:resume",
+    "GAME_STATE_CHANGE": "game:stateChange",
+    "UI_HINT": "ui:hint",
+    "POWERUP_CREATED": "powerup:created",
+    "POWERUP_ACTIVATED": "powerup:activated",
+    "OBSTACLE_HIT": "obstacle:hit",
+    "OBSTACLE_DESTROYED": "obstacle:destroyed",
+    "OBSTACLE_SPAWNED": "obstacle:spawned",
+    "LEADERBOARD_UPDATED": "leaderboard:updated",
+    "INPUT_TAP_POWERUP": "input:tapPowerUp"
+  },
+  "payload_contracts": {
+    "ui:hint": {
+      "required_shape": "{ from, to, cells }",
+      "clear_shape": "{ from: null, to: null, cells: [] }"
+    }
+  },
+  "deprecated_events": [
+    "score:add",
+    "game:over"
+  ],
+  "public_apis": {
+    "GameLoop": [
+      "setTheme",
+      "setTimerManager",
+      "start",
+      "stop",
+      "startSession",
+      "stopSession",
+      "handleGameOver"
+    ],
+    "RendererAnimationApi": [
+      "playSwapAnimation",
+      "clearSwapAnimation",
+      "playRemoveAnimation",
+      "clearRemoveAnimation",
+      "playDropAnimation",
+      "clearDropAnimation",
+      "playShakeAnimation",
+      "clearShakeAnimation",
+      "clearTransientAnimations"
+    ],
+    "Board": [
+      "setRuleSet",
+      "runEndTurnRules",
+      "isPlayableCell",
+      "setRandomSeed",
+      "findMatches",
+      "processDestruction",
+      "checkPowerUpInteraction",
+      "dropTiles",
+      "fillEmpty",
+      "hasValidMoves",
+      "findPossibleMoves",
+      "removeSingleCell"
+    ]
+  },
+  "timing_config_keys": [
+    "HINT_IDLE_MS",
+    "SWAP_DURATION",
+    "REMOVE_DURATION",
+    "DROP_DURATION_PER_CELL",
+    "INVALID_SWAP_DURATION",
+    "REFILL_SETTLE_DELAY"
+  ],
+  "quality_gates": [
+    "npm run prompt:check",
+    "npm run validate:levels",
+    "npm test",
+    "npm run test:e2e"
+  ],
+  "level_config_contracts": {
+    "rules": {
+      "fillMode": [
+        "top-down",
+        "bottom-up"
+      ],
+      "obstacleExpansion": [
+        "none"
+      ]
+    },
+    "mask": {
+      "supported_fields": [
+        "mask",
+        "playableCells",
+        "voidCells"
+      ]
+    }
+  }
+}

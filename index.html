@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Match-3 限时竞技赛</title>
+  <meta name="description" content="90秒限时三消竞技挑战，花园与家园双主题">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/themes.css">
+  <link rel="stylesheet" href="css/game.css">
+</head>
+<body>
+  <!-- ====== 开始界面 ====== -->
+  <div id="startScreen" class="screen active">
+    <div class="start-content">
+      <h1 class="game-title">
+        <span class="title-emoji">✨</span>
+        Match-3
+        <span class="title-sub">限时竞技赛</span>
+      </h1>
+      <p class="subtitle">90秒消除挑战 | 连消得分翻倍</p>
+      
+      <div class="theme-selector">
+        <button class="theme-btn active" data-theme="garden" id="themeGarden">
+          <span class="theme-icon">🌸</span>
+          <span class="theme-name">花园物语</span>
+        </button>
+        <button class="theme-btn" data-theme="home" id="themeHome">
+          <span class="theme-icon">🛋️</span>
+          <span class="theme-name">家园梦想</span>
+        </button>
+      </div>
+
+      <div class="player-input">
+        <input type="text" id="playerName" placeholder="输入你的名字" maxlength="12" value="Player">
+      </div>
+
+      <button class="start-btn" id="btnStart">
+        <span>🎮 开始挑战</span>
+      </button>
+
+      <button class="leaderboard-btn" id="btnShowLeaderboard">
+        🏆 排行榜
+      </button>
+    </div>
+  </div>
+
+  <!-- ====== 游戏界面 ====== -->
+  <div id="gameScreen" class="screen">
+    <div class="game-hud">
+      <div class="hud-left">
+        <div class="hud-item" id="hudTimer">
+          <div class="hud-label">⏱ 时间</div>
+          <div class="hud-value" id="timerDisplay">1:30</div>
+          <div class="timer-bar-container">
+            <div class="timer-bar" id="timerBar"></div>
+          </div>
+        </div>
+      </div>
+      <div class="hud-center">
+        <div class="score-display">
+          <div class="score-label">得分</div>
+          <div class="score-value" id="scoreDisplay">0</div>
+        </div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-item">
+          <div class="hud-label">🔥 连消</div>
+          <div class="hud-value" id="comboDisplay">0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-container">
+      <canvas id="gameCanvas"></canvas>
+      <!-- 连消浮动文字层 -->
+      <div id="comboOverlay" class="combo-overlay"></div>
+    </div>
+  </div>
+
+  <!-- ====== 结算界面 ====== -->
+  <div id="endScreen" class="screen">
+    <div class="end-content">
+      <h2 class="end-title">⏰ 时间到！</h2>
+      <div class="end-stats">
+        <div class="stat-item">
+          <span class="stat-label">最终得分</span>
+          <span class="stat-value" id="finalScore">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">最高连消</span>
+          <span class="stat-value" id="finalCombo">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">消除总数</span>
+          <span class="stat-value" id="finalCleared">0</span>
+        </div>
+      </div>
+      <div class="end-rank" id="endRank" style="display:none">
+        <span>🏆 排行榜第 <strong id="rankNumber">1</strong> 名！</span>
+      </div>
+      <div class="end-buttons">
+        <button class="start-btn" id="btnReplay">🔄 再来一局</button>
+        <button class="leaderboard-btn" id="btnEndLeaderboard">🏆 排行榜</button>
+        <button class="secondary-btn" id="btnBackToStart">🏠 返回主页</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 排行榜弹窗 ====== -->
+  <div id="leaderboardModal" class="modal">
+    <div class="modal-content">
+      <h2>🏆 排行榜</h2>
+      <div id="leaderboardList" class="leaderboard-list">
+        <div class="leaderboard-empty">暂无记录</div>
+      </div>
+      <div class="modal-buttons">
+        <button class="secondary-btn" id="btnClearLeaderboard">清空记录</button>
+        <button class="start-btn" id="btnCloseLeaderboard">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
