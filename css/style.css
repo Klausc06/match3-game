@@ -34,12 +34,65 @@ html, body {
 
 body {
   font-family: 'Outfit', system-ui, -apple-system, sans-serif;
-  background: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary));
+  background-color: var(--bg-primary);
   color: var(--text-primary);
   display: flex;
   justify-content: center;
   align-items: center;
   user-select: none;
+}
+
+/* ===== 动态流光背景 ===== */
+.bg-orbs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: float 20s infinite ease-in-out alternate;
+}
+
+.orb-1 {
+  width: 400px;
+  height: 400px;
+  background: var(--bg-secondary);
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 300px;
+  height: 300px;
+  background: var(--bg-tertiary);
+  bottom: -50px;
+  right: -50px;
+  animation-duration: 25s;
+  animation-delay: -5s;
+}
+
+.orb-3 {
+  width: 250px;
+  height: 250px;
+  background: var(--accent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.15;
+  animation-duration: 15s;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -40px) scale(1.1); }
+  100% { transform: translate(-20px, 20px) scale(0.9); }
 }
 
 /* ===== 画面切换系统 ===== */
@@ -60,6 +113,29 @@ body {
   opacity: 1;
   pointer-events: all;
   z-index: 10;
+}
+
+/* ===== 毛玻璃主卡片 ===== */
+.start-card {
+  text-align: center;
+  width: 90%;
+  max-width: 440px;
+  padding: 48px 36px;
+  background: rgba(30, 30, 45, 0.4);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(20px);
+  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpFade {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ===== 通用按钮 ===== */

@@ -73,13 +73,22 @@
   box-shadow: 0 0 20px var(--accent-glow);
 }
 
-.theme-icon {
-  font-size: 32px;
+.theme-icon-img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-btn:hover .theme-icon-img {
+  transform: scale(1.15) rotate(-5deg);
 }
 
 .theme-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  letter-spacing: 1px;
 }
 
 /* 输入框 */

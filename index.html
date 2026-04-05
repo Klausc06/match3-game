@@ -13,11 +13,18 @@
   <link rel="stylesheet" href="css/game.css">
 </head>
 <body>
+  <!-- 动态流光背景 -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
   <!-- ====== 开始界面 ====== -->
   <div id="startScreen" class="screen active">
-    <div class="start-content">
+    <!-- 将包裹层变为毛玻璃卡片 -->
+    <div class="start-card">
       <h1 class="game-title">
-        <span class="title-emoji">✨</span>
         Match-3
         <span class="title-sub">限时竞技赛</span>
       </h1>
@@ -25,11 +32,11 @@
       
       <div class="theme-selector">
         <button class="theme-btn active" data-theme="garden" id="themeGarden">
-          <span class="theme-icon">🌸</span>
+          <img src="assets/tiles/garden/flower.png" alt="Garden" class="theme-icon-img" />
           <span class="theme-name">花园物语</span>
         </button>
         <button class="theme-btn" data-theme="home" id="themeHome">
-          <span class="theme-icon">🛋️</span>
+          <img src="assets/tiles/home/cushion.png" alt="Home" class="theme-icon-img" />
           <span class="theme-name">家园梦想</span>
         </button>
       </div>
@@ -39,11 +46,11 @@
       </div>
 
       <button class="start-btn" id="btnStart">
-        <span>🎮 开始挑战</span>
+        <span>开始挑战</span>
       </button>
 
       <button class="leaderboard-btn" id="btnShowLeaderboard">
-        🏆 排行榜
+        排行榜
       </button>
     </div>
   </div>
