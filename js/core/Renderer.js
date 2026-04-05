@@ -255,6 +255,22 @@ export class Renderer {
           ctx.lineWidth = 2;
           ctx.strokeRect(x+2, y+2, ts-4, ts-4);
         }
+
+        // 绘制 Stream 层
+        if (this.board.streamGrid && this.board.streamGrid[r][c]) {
+          ctx.fillStyle = 'rgba(65, 150, 225, 0.4)';
+          ctx.fillRect(x, y, ts, ts);
+          ctx.strokeStyle = 'rgba(30, 144, 255, 0.6)';
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x+2, y+2, ts-4, ts-4);
+          
+          ctx.font = `${ts * 0.4}px serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.globalAlpha = 0.5;
+          ctx.fillText('🌊', x + ts / 2, y + ts / 2);
+          ctx.globalAlpha = 1;
+        }
       }
     }
 
@@ -333,8 +349,8 @@ export class Renderer {
         }
 
         // ── 正常绘制（无 alpha/scale 动画干扰）──
-        if (tile.obstacle && tile.obstacle.type === 'box') {
-          this._drawBoxObstacle(ctx, x, y, tsz);
+        if (tile.obstacle && (tile.obstacle.type === 'box' || tile.obstacle.type === 'grass')) {
+          this._drawBoxObstacle(ctx, x, y, tsz, tile.obstacle.type, tile.obstacle.hp);
         } else {
           const colorDef = this.colors[tile.color];
 
@@ -385,7 +401,7 @@ export class Renderer {
 
     if (tile.obstacle && ['box', 'grass'].includes(tile.obstacle.type)) {
       // 纯占位障碍物——独立绘制，无底部图块
-      this._drawBoxObstacle(ctx, x, y, tsz, tile.obstacle.type);
+      this._drawBoxObstacle(ctx, x, y, tsz, tile.obstacle.type, tile.obstacle.hp);
     } else {
       const colorDef = this.colors[tile.color];
       if (tile.powerUp) {
@@ -588,7 +604,7 @@ export class Renderer {
    * 绘制纯占位障碍物（无底部图块）
    * @param {string} [obstacleType='box'] - 'box' | 'grass'
    */
-  _drawBoxObstacle(ctx, x, y, size, obstacleType = 'box') {
+  _drawBoxObstacle(ctx, x, y, size, obstacleType = 'box', hp = 1) {
     const radius = size * 0.18;
     const padding = size * 0.06;
     const innerSize = size - padding * 2;
@@ -602,11 +618,18 @@ export class Renderer {
       // 草地：绿色底 + 贴图
       const grassImg = Assets.getImage('grass');
       if (grassImg) {
+        ctx.globalAlpha = hp > 1 ? 0.7 : 1; 
         ctx.drawImage(grassImg, x + padding, y + padding, innerSize, innerSize);
+        ctx.globalAlpha = 1;
       } else {
         const grad = ctx.createLinearGradient(x, y, x, y + size);
-        grad.addColorStop(0, '#6abf4b');
-        grad.addColorStop(1, '#3a8a2a');
+        if (hp > 1) {
+          grad.addColorStop(0, '#4a9f2b');
+          grad.addColorStop(1, '#1a6a0a');
+        } else {
+          grad.addColorStop(0, '#6abf4b');
+          grad.addColorStop(1, '#3a8a2a');
+        }
         this._roundRect(ctx, x + padding, y + padding, innerSize, innerSize, radius);
         ctx.fillStyle = grad;
         ctx.fill();

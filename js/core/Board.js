@@ -32,6 +32,7 @@ export class Board {
 
     this.grid = [];
     this.carpetGrid = [];
+    this.streamGrid = [];
     this.maskGrid = [];
     this.lastSwap = null;
     this.ruleSet = { ...DEFAULT_RULE_SET };
@@ -86,9 +87,11 @@ export class Board {
     for (let r = 0; r < this.rows; r++) {
       this.grid[r] = [];
       this.carpetGrid[r] = [];
+      this.streamGrid[r] = [];
       for (let c = 0; c < this.cols; c++) {
         this.grid[r][c] = this.isPlayableCell(r, c) ? createNonMatchingTile(this, r, c) : null;
         this.carpetGrid[r][c] = false;
+        this.streamGrid[r][c] = false;
       }
     }
 
@@ -101,8 +104,13 @@ export class Board {
         }
         if (!this.isPlayableCell(obs.r, obs.c)) continue;
 
-        if (obs.type === OB.CARPET) {
+        if (obs.type === OB.CARPET || obs.type === 'carpet') {
           this.carpetGrid[obs.r][obs.c] = true;
+          continue;
+        }
+
+        if (obs.type === 'stream') {
+          this.streamGrid[obs.r][obs.c] = true;
           continue;
         }
 

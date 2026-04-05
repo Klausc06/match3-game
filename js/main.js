@@ -22,6 +22,7 @@ window.addEventListener('unhandledrejection', (e) => {
 import { EventBus } from './core/EventBus.js';
 import { E } from './config/Events.js';
 import { GameConfig } from './config/GameConfig.js';
+import { generateLevel } from './config/LevelGenerator.js';
 import { StateMachine } from './core/StateMachine.js';
 import { Board } from './core/Board.js';
 import { Renderer } from './core/Renderer.js';
@@ -110,6 +111,16 @@ document.getElementById('btnShowLeaderboard').addEventListener('click', () => {
   ui.showModal('leaderboardModal');
 });
 
+document.getElementById('btnDemoHome').addEventListener('click', () => {
+  const level = generateLevel('home', GameConfig.BOARD_ROWS, GameConfig.BOARD_COLS);
+  startGame(true, 'home', level);
+});
+
+document.getElementById('btnDemoGarden').addEventListener('click', () => {
+  const level = generateLevel('garden', GameConfig.BOARD_ROWS, GameConfig.BOARD_COLS);
+  startGame(true, 'garden', level);
+});
+
 document.getElementById('btnEndLeaderboard').addEventListener('click', () => {
   ui.renderLeaderboard(leaderboard.getEntries());
   ui.showModal('leaderboardModal');
@@ -135,7 +146,7 @@ window.addEventListener('resize', () => {
 //  游戏流程
 // ═══════════════════════════════════════════════════════
 
-function startGame() {
+function startGame(isDemo = false, demoTheme = null, demoLevelConfig = null) {
   try {
     // 重置各模块状态（不清除事件！）
     stateMachine.reset();
@@ -144,16 +155,24 @@ function startGame() {
     if (runtimeSeed !== null) board.setRandomSeed(runtimeSeed);
 
     // 获取当前主题配置
-    const themeConfig = selectedTheme === 'home'
+    let currentTheme = selectedTheme;
+    if (isDemo) currentTheme = demoTheme;
+    
+    const themeConfig = currentTheme === 'home'
       ? GameConfig.HOME_THEME
       : GameConfig.GARDEN_THEME;
 
     // 设置主题
-    renderer.setTheme(selectedTheme, themeConfig);
-    leaderboard.setTheme(selectedTheme);
+    renderer.setTheme(currentTheme, themeConfig);
+    leaderboard.setTheme(currentTheme);
 
-    // 初始化棋盘（传入主题专属关卡配置）
-    board.init(themeConfig.level);
+    // 初始化棋盘（传入主题专属关卡配置，如果是Demo则传传传入特定布局）
+    let loadConfig = themeConfig.level;
+    if (isDemo) {
+        loadConfig = demoLevelConfig;
+        timerManager.reset(GameConfig.GAME_DURATION); 
+    }
+    board.init(loadConfig);
 
     // 更新 GameLoop 的主题配置（用于道具映射等）
     gameLoop.setTheme(themeConfig);
@@ -169,7 +188,7 @@ function startGame() {
 
     // 启动游戏循环与计时器
     gameLoop.start();
-    timerManager.start();
+    if (!isDemo) timerManager.start();
   } catch (e) {
     console.error('[startGame ERROR]', e);
     alert('启动游戏出错: ' + e.message + '\n' + e.stack);

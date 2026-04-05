@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>梦幻花园 / 梦幻家园</title>
   <meta name="description" content="90秒限时三消竞技挑战，花园与家园双主题">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,6 +52,11 @@
       <button class="leaderboard-btn" id="btnShowLeaderboard">
         排行榜
       </button>
+
+      <div class="demo-btn-row">
+        <button class="secondary-btn demo-btn" id="btnDemoHome">设计截图: 家园</button>
+        <button class="secondary-btn demo-btn" id="btnDemoGarden">设计截图: 花园</button>
+      </div>
     </div>
   </div>
 
@@ -86,6 +91,26 @@
       <!-- 连消浮动文字层 -->
       <div id="comboOverlay" class="combo-overlay"></div>
     </div>
+
+    <!-- 图例面板：使用与游戏 Canvas 渲染相同的 PNG 素材 -->
+    <div id="legendPanel" class="legend-panel">
+      <div class="legend-section">
+        <div class="legend-title">障碍物</div>
+        <div class="legend-item"><img src="assets/tiles/home/box.png" alt="箱子" class="legend-img"><span>箱子</span></div>
+        <div class="legend-item"><img src="assets/tiles/home/chain.png" alt="锁链" class="legend-img"><span>锁链</span></div>
+        <div class="legend-item"><img src="assets/tiles/home/jelly.png" alt="果冻" class="legend-img"><span>果冻</span></div>
+        <div class="legend-item"><span class="legend-icon legend-carpet-block"></span><span>地毯</span></div>
+        <div class="legend-item"><img src="assets/tiles/garden/grass.png" alt="草地" class="legend-img"><span>草地</span></div>
+        <div class="legend-item"><span class="legend-icon legend-stream-block"></span><span>溪流</span></div>
+      </div>
+      <div class="legend-section">
+        <div class="legend-title">道具</div>
+        <div class="legend-item"><img src="assets/tiles/shared/firecracker.png" alt="鞭炮" class="legend-img"><span>鞭炮/爆竹</span></div>
+        <div class="legend-item"><img src="assets/tiles/shared/bomb.png" alt="炸弹" class="legend-img"><span>炸弹</span></div>
+        <div class="legend-item"><img src="assets/tiles/shared/rocket.png" alt="火箭" class="legend-img"><span>火箭</span></div>
+        <div class="legend-item"><img src="assets/tiles/home/paperplane.png" alt="纸飞机" class="legend-img"><span>纸飞机</span></div>
+      </div>
+    </div>
   </div>
 
   <!-- ====== 结算界面 ====== -->
@@ -106,7 +131,7 @@
           <span class="stat-value" id="finalCleared">0</span>
         </div>
       </div>
-      <div class="end-rank" id="endRank" style="display:none">
+      <div class="end-rank" id="endRank">
         <span>🏆 排行榜第 <strong id="rankNumber">1</strong> 名！</span>
       </div>
       <div class="end-buttons">
