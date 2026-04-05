@@ -102,8 +102,8 @@ document.querySelectorAll('.theme-btn').forEach(btn => {
   });
 });
 
-document.getElementById('btnStart').addEventListener('click', startGame);
-document.getElementById('btnReplay').addEventListener('click', startGame);
+document.getElementById('btnStart').addEventListener('click', () => startGame());
+document.getElementById('btnReplay').addEventListener('click', () => startGame());
 document.getElementById('btnBackToStart').addEventListener('click', () => ui.showScreen('start'));
 
 document.getElementById('btnShowLeaderboard').addEventListener('click', () => {
@@ -148,45 +148,36 @@ window.addEventListener('resize', () => {
 
 function startGame(isDemo = false, demoTheme = null, demoLevelConfig = null) {
   try {
-    // 重置各模块状态（不清除事件！）
     stateMachine.reset();
     scoreManager.reset();
     timerManager.reset(GameConfig.GAME_DURATION);
     if (runtimeSeed !== null) board.setRandomSeed(runtimeSeed);
 
-    // 获取当前主题配置
-    let currentTheme = selectedTheme;
-    if (isDemo) currentTheme = demoTheme;
-    
+    const currentTheme = isDemo ? demoTheme : selectedTheme;
     const themeConfig = currentTheme === 'home'
       ? GameConfig.HOME_THEME
       : GameConfig.GARDEN_THEME;
 
-    // 设置主题
     renderer.setTheme(currentTheme, themeConfig);
     leaderboard.setTheme(currentTheme);
 
-    // 初始化棋盘（传入主题专属关卡配置，如果是Demo则传传传入特定布局）
-    let loadConfig = themeConfig.level;
-    if (isDemo) {
-        loadConfig = demoLevelConfig;
-        timerManager.reset(GameConfig.GAME_DURATION); 
-    }
-    board.init(loadConfig);
+    // 统一使用 LevelGenerator 生成关卡
+    const levelConfig = demoLevelConfig
+      || generateLevel(currentTheme, GameConfig.BOARD_ROWS, GameConfig.BOARD_COLS);
+    board.init(levelConfig);
 
-    // 更新 GameLoop 的主题配置（用于道具映射等）
     gameLoop.setTheme(themeConfig);
 
-    // 调整画布
     resizeCanvas();
     renderer.resize(ui.canvas.width, ui.canvas.height);
 
-    // 重置 HUD
     ui.resetHUD(GameConfig.GAME_DURATION);
     ui.showScreen('game');
     ui.hideModal('leaderboardModal');
 
-    // 启动游戏循环与计时器
+    // 根据主题更新图例
+    updateLegend(currentTheme);
+
     gameLoop.start();
     if (!isDemo) timerManager.start();
   } catch (e) {
@@ -204,4 +195,46 @@ function endGame() {
   const rank = leaderboard.submit(playerName, scoreManager.score, scoreManager.maxCombo);
 
   ui.showEndScreen(scoreManager.score, scoreManager.maxCombo, scoreManager.totalCleared, rank);
+}
+
+// ═══════════════════════════════════════════════════════
+//  图例面板：根据主题动态显示对应的障碍物和道具
+// ═══════════════════════════════════════════════════════
+
+const LEGEND_DATA = {
+  garden: {
+    obstacles: [
+      { html: '<img src="assets/tiles/garden/grass.png" alt="草地" class="legend-img">', label: '草地' },
+      { html: '<img src="assets/tiles/home/box.png" alt="箱子" class="legend-img">', label: '箱子' },
+      { html: '<img src="assets/tiles/home/chain.png" alt="锁链" class="legend-img">', label: '锁链' },
+      { html: '<span class="legend-icon legend-stream-block"></span>', label: '溪流' },
+    ],
+    powerUps: [
+      { html: '<img src="assets/tiles/shared/firecracker.png" alt="鞭炮" class="legend-img">', label: '鞭炮' },
+      { html: '<img src="assets/tiles/shared/bomb.png" alt="炸弹" class="legend-img">', label: '炸弹' },
+    ],
+  },
+  home: {
+    obstacles: [
+      { html: '<img src="assets/tiles/home/box.png" alt="箱子" class="legend-img">', label: '箱子' },
+      { html: '<img src="assets/tiles/home/chain.png" alt="锁链" class="legend-img">', label: '锁链' },
+      { html: '<img src="assets/tiles/home/jelly.png" alt="果冻" class="legend-img">', label: '果冻' },
+      { html: '<span class="legend-icon legend-carpet-block"></span>', label: '地毯' },
+    ],
+    powerUps: [
+      { html: '<img src="assets/tiles/shared/rocket.png" alt="火箭" class="legend-img">', label: '火箭' },
+      { html: '<img src="assets/tiles/shared/bomb.png" alt="炸弹" class="legend-img">', label: '炸弹' },
+      { html: '<img src="assets/tiles/home/paperplane.png" alt="纸飞机" class="legend-img">', label: '纸飞机' },
+    ],
+  },
+};
+
+function updateLegend(theme) {
+  const panel = document.getElementById('legendPanel');
+  const data = LEGEND_DATA[theme] || LEGEND_DATA.garden;
+  const renderItems = (items) =>
+    items.map(i => `<div class="legend-item">${i.html}<span>${i.label}</span></div>`).join('');
+  panel.innerHTML =
+    `<div class="legend-section"><div class="legend-title">障碍物</div>${renderItems(data.obstacles)}</div>` +
+    `<div class="legend-section"><div class="legend-title">道具</div>${renderItems(data.powerUps)}</div>`;
 }
