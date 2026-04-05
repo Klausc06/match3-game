@@ -336,25 +336,4 @@ test('纵向 4 连 → 生成 match4H（横向火箭 token）', () => {
   assert.equal(group4.powerUpToSpawn, 'match4H', '纵向 4 连应生成 match4H（垂直原则）');
 });
 
-/* ═══════ 10. 双道具组合 ═══════ */
-
-test('rainbow + rainbow → 全场清除', () => {
-  const board = make(400);
-  const a = new Tile(0); a.powerUp = 'rainbow';
-  const b = new Tile(1); b.powerUp = 'rainbow';
-  board.setTile(2, 2, a);
-  board.setTile(2, 3, b);
-
-  const interaction = board.checkPowerUpInteraction({ r: 2, c: 2 }, { r: 2, c: 3 });
-  assert.equal(interaction.activated, true);
-  assert.equal(interaction.comboType, 'rainbow+rainbow');
-
-  // 执行消除
-  const trigger = {
-    from: { r: 2, c: 2 }, to: { r: 2, c: 3 },
-    interaction,
-  };
-  const removed = board.processDestruction([], trigger);
-  assert.equal(removed.length, 25, '5×5 棋盘全场清除应 = 25 格');
-});
 

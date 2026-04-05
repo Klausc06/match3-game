@@ -1,8 +1,6 @@
 import { PU } from '../config/PowerUpTypes.js';
 import { BombHome } from './BombHome.js';
-import { BombGarden } from './BombGarden.js';
-import { Dynamite } from './Dynamite.js';
-import { Tnt } from './Tnt.js';
+import { RadiusBomb } from './RadiusBomb.js';
 import { Rocket } from './Rocket.js';
 import { Firecracker } from './Firecracker.js';
 import { RainbowBall } from './RainbowBall.js';
@@ -13,9 +11,9 @@ export class PowerUpFactory {
     if (!type) return null;
     switch (type) {
       case PU.HOME_BOMB:    return new BombHome();
-      case PU.GARDEN_BOMB:  return new BombGarden();
-      case PU.DYNAMITE:     return new Dynamite();
-      case PU.TNT:          return new Tnt();
+      case PU.GARDEN_BOMB:  return new RadiusBomb('garden-bomb', 2);
+      case PU.DYNAMITE:     return new RadiusBomb('dynamite', 3);
+      case PU.TNT:          return new RadiusBomb('tnt', 4);
       case PU.ROCKET_H:     return new Rocket('horizontal');
       case PU.ROCKET_V:     return new Rocket('vertical');
       case PU.FIRECRACKER:  return new Firecracker();
@@ -27,7 +25,6 @@ export class PowerUpFactory {
 
   static getAffectedCells(type, r, c, board, targetColor = null, direction = null) {
     const pu = this.getPowerUp(type);
-    if (pu) return pu.getAffectedCells(r, c, board, targetColor, direction);
-    return [];
+    return pu ? pu.getAffectedCells(r, c, board, targetColor, direction) : [];
   }
 }

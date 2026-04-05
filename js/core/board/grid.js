@@ -1,6 +1,5 @@
 import { EventBus } from '../EventBus.js';
 import { E } from '../../config/Events.js';
-import { GameConfig as C } from '../../config/GameConfig.js';
 import {
   clearMatchFlags,
   createNonMatchingTile,
@@ -50,13 +49,9 @@ export function dropTiles(board) {
 
 export function fillEmpty(board) {
   const newTiles = [];
-  const fillMode = board.ruleSet?.fillMode || 'top-down';
-  const rowIndices = fillMode === 'bottom-up'
-    ? Array.from({ length: board.rows }, (_, i) => board.rows - 1 - i)
-    : Array.from({ length: board.rows }, (_, i) => i);
 
   for (let c = 0; c < board.cols; c++) {
-    for (const r of rowIndices) {
+    for (let r = 0; r < board.rows; r++) {
       if (!board.isPlayableCell(r, c)) continue;
       if (board.grid[r][c] !== null) continue;
       const tile = createNonMatchingTile(board, r, c);
@@ -84,7 +79,7 @@ export function shuffle(board) {
     }
   }
 
-  for (let attempt = 0; attempt < C.MAX_SHUFFLE_ATTEMPTS; attempt++) {
+  for (let attempt = 0; attempt < 50; attempt++) {
     board.shuffleArrayInPlace(movableTiles);
 
     for (let i = 0; i < positions.length; i++) {
