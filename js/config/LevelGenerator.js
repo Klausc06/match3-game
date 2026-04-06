@@ -22,25 +22,25 @@
  */
 const GENERATION_PROFILES = {
   home: {
-    density: 0.45,
-    voidChance: 0.08,
+    density: 0.50,
+    voidChance: 0,
     symmetry: 'quad',
     obstacles: {
-      carpet: { weight: 3, hpRange: [1, 1], cluster: true, clusterSize: [2, 4] },
-      box:    { weight: 5, hpRange: [1, 2], cluster: true, clusterSize: [2, 5] },
-      chain:  { weight: 3, hpRange: [1, 1], cluster: false },
-      jelly:  { weight: 3, hpRange: [1, 1], cluster: true, clusterSize: [2, 3] },
+      box:    { weight: 6, hpRange: [1, 2], cluster: true, clusterSize: [2, 5] },
+      carpet: { weight: 4, hpRange: [1, 1], cluster: true, clusterSize: [3, 5] },
+      chain:  { weight: 5, hpRange: [1, 1], cluster: true, clusterSize: [2, 3] },
+      jelly:  { weight: 3, hpRange: [1, 1], cluster: true, clusterSize: [2, 4] },
     },
   },
   garden: {
     density: 0.50,
     voidChance: 0,
     symmetry: 'mirror-y',
+    streamCount: [1, 2],  // 生成 1~2 条贯穿溪流
     obstacles: {
-      stream: { weight: 2, hpRange: [1, 1], cluster: true, clusterSize: [4, 9], clusterShape: 'line' },
-      grass:  { weight: 6, hpRange: [1, 2], cluster: true, clusterSize: [3, 6] },
-      chain:  { weight: 2, hpRange: [1, 1], cluster: false },
-      box:    { weight: 2, hpRange: [1, 2], cluster: true, clusterSize: [2, 3] },
+      grass:  { weight: 7, hpRange: [1, 2], cluster: true, clusterSize: [3, 7] },
+      chain:  { weight: 4, hpRange: [1, 1], cluster: true, clusterSize: [2, 3] },
+      box:    { weight: 3, hpRange: [1, 2], cluster: true, clusterSize: [2, 4] },
     },
   },
 };
@@ -66,8 +66,68 @@ export function generateLevel(theme, rows, cols, rng = Math.random) {
   if (profile.voidChance > 0) {
     placeVoids(grid, rows, cols, profile, rng, voidCells);
   }
+  // ── 全局障碍物收集器 ──
+  const obstacles = [];
+  let placed = 0;
 
-  // ── Step 2: 计算可用格子 ──
+  // ── Step 2: 生成蜿蜒溪流（从顶到底，带横向偏移） ──
+  const streams = [];
+  if (profile.streamCount) {
+    const [minStreams, maxStreams] = profile.streamCount;
+    const numStreams = minStreams + Math.floor(rng() * (maxStreams - minStreams + 1));
+    const occupiedCells = new Set(); // 防止两条溪流重叠
+
+    for (let s = 0; s < numStreams; s++) {
+      // 起始列：避开最边缘两列，留出蜿蜒空间
+      let startCol = 3 + Math.floor(rng() * (cols - 6));
+      let retries = 0;
+      while (retries < 30 && occupiedCells.has(`0,${startCol}`)) {
+        startCol = 3 + Math.floor(rng() * (cols - 6));
+        retries++;
+      }
+      if (retries >= 30) continue;
+
+      const dir = rng() > 0.5 ? 'down' : 'up';
+      const path = []; // [{r, c}]
+      let curCol = startCol;
+
+      for (let r = 0; r < rows; r++) {
+        path.push({ r, c: curCol });
+        // 每隔 2~4 行随机偏移一列（30% 左，30% 右，40% 直行）
+        if (r < rows - 1 && (r + 1) % (2 + Math.floor(rng() * 3)) === 0) {
+          const shift = rng();
+          if (shift < 0.3 && curCol > 2) {
+            curCol -= 1;
+          } else if (shift < 0.6 && curCol < cols - 3) {
+            curCol += 1;
+          }
+          // 偏移后在同一行加一格（拐弯处需要连通）
+          if (path[path.length - 1].c !== curCol) {
+            path.push({ r, c: curCol });
+          }
+        }
+      }
+
+      // 检查路径是否与已有溪流重叠过多
+      const overlap = path.filter(p => occupiedCells.has(`${p.r},${p.c}`)).length;
+      if (overlap > path.length * 0.3) continue;
+
+      // 将路径写入 grid
+      const streamPath = [];
+      for (const { r, c } of path) {
+        if (occupiedCells.has(`${r},${c}`)) continue;
+        occupiedCells.add(`${r},${c}`);
+        const obs = { r, c, type: 'stream', dir };
+        grid[r][c] = obs;
+        obstacles.push(obs);
+        streamPath.push({ r, c });
+        placed++;
+      }
+      streams.push({ path: streamPath, dir });
+    }
+  }
+
+  // ── Step 3: 计算可用格子 ──
   const playableCells = [];
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
@@ -75,13 +135,11 @@ export function generateLevel(theme, rows, cols, rng = Math.random) {
     }
   }
 
-  // ── Step 3: 生成障碍物 ──
-  const targetCount = Math.floor(playableCells.length * profile.density);
-  const obstacles = [];
+  // ── Step 4: 生成其他障碍物 ──
+  const targetCount = Math.floor((playableCells.length + placed) * profile.density);
   const obstacleTypes = Object.entries(profile.obstacles);
   const totalWeight = obstacleTypes.reduce((s, [, cfg]) => s + cfg.weight, 0);
 
-  let placed = 0;
   let attempts = 0;
   const maxAttempts = targetCount * 10;
 
@@ -170,7 +228,7 @@ export function generateLevel(theme, rows, cols, rng = Math.random) {
     }
   }
 
-  // ── Step 4: 应用对称 ──
+  // ── Step 5: 应用对称 ──
   if (profile.symmetry !== 'none') {
     applySymmetry(grid, rows, cols, profile.symmetry, obstacles, voidCells);
   }
@@ -179,9 +237,11 @@ export function generateLevel(theme, rows, cols, rng = Math.random) {
     rules: {
       fillMode: 'none',
       obstacleExpansion: 'none',
+      carpetEnabled: theme === 'home', // 地毯仅 home 主题
     },
     voidCells,
     obstacles,
+    streams, // 溪流列信息：[{ col, dir: 'down'|'up' }]
   };
 }
 
@@ -219,6 +279,8 @@ function applySymmetry(grid, rows, cols, mode, obstacles, voidCells) {
   const voidToMirror = [...voidCells];
 
   for (const obs of toMirror) {
+    // 溪流已经是完整列，不参与对称镜像
+    if (obs.type === 'stream') continue;
     const mirrors = getMirrorPositions(obs.r, obs.c, rows, cols, mode);
     for (const { r, c } of mirrors) {
       if (r >= 0 && r < rows && c >= 0 && c < cols && grid[r][c] === null) {

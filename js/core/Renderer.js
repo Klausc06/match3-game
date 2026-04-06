@@ -247,29 +247,44 @@ export class Renderer {
           : 'rgba(255, 255, 255, 0.04)';
         ctx.fillRect(x, y, ts, ts);
 
-        // 绘制 Carpet 层（作为地垫/草坪底衬）
-        if (this.board.carpetGrid && this.board.carpetGrid[r][c]) {
-          ctx.fillStyle = 'rgba(144, 238, 144, 0.4)'; // 柔和的浅绿色模拟草坪蔓延
+        // 绘制 Carpet 层（仅 home 主题启用地毯）
+        if (this.board.ruleSet?.carpetEnabled && this.board.carpetGrid?.[r]?.[c]) {
+          ctx.fillStyle = 'rgba(144, 238, 144, 0.4)';
           ctx.fillRect(x, y, ts, ts);
-          ctx.strokeStyle = 'rgba(34, 139, 34, 0.6)'; // 绿色封边
+          ctx.strokeStyle = 'rgba(34, 139, 34, 0.6)';
           ctx.lineWidth = 2;
           ctx.strokeRect(x+2, y+2, ts-4, ts-4);
         }
 
         // 绘制 Stream 层
-        if (this.board.streamGrid && this.board.streamGrid[r][c]) {
-          ctx.fillStyle = 'rgba(65, 150, 225, 0.4)';
+        const streamDir = this.board.streamGrid?.[r]?.[c];
+        if (streamDir) {
+          ctx.fillStyle = 'rgba(65, 150, 225, 0.35)';
           ctx.fillRect(x, y, ts, ts);
-          ctx.strokeStyle = 'rgba(30, 144, 255, 0.6)';
+          ctx.strokeStyle = 'rgba(30, 144, 255, 0.5)';
           ctx.lineWidth = 2;
           ctx.strokeRect(x+2, y+2, ts-4, ts-4);
           
-          ctx.font = `${ts * 0.4}px serif`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.globalAlpha = 0.5;
-          ctx.fillText('🌊', x + ts / 2, y + ts / 2);
-          ctx.globalAlpha = 1;
+          // 绘制水流方向箭头
+          ctx.save();
+          ctx.globalAlpha = 0.45;
+          const cx = x + ts / 2;
+          const cy = y + ts / 2;
+          const arrowSize = ts * 0.2;
+          ctx.fillStyle = '#1e90ff';
+          ctx.beginPath();
+          if (streamDir === 'down') {
+            ctx.moveTo(cx - arrowSize, cy - arrowSize * 0.5);
+            ctx.lineTo(cx + arrowSize, cy - arrowSize * 0.5);
+            ctx.lineTo(cx, cy + arrowSize);
+          } else {
+            ctx.moveTo(cx - arrowSize, cy + arrowSize * 0.5);
+            ctx.lineTo(cx + arrowSize, cy + arrowSize * 0.5);
+            ctx.lineTo(cx, cy - arrowSize);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
         }
       }
     }

@@ -20,7 +20,8 @@ import { hitAdjacentObstacles } from './board/obstacles.js';
 
 const DEFAULT_RULE_SET = Object.freeze({
   fillMode: 'top-down',
-  obstacleExpansion: 'none', // 'none' (spreading obstacles removed)
+  obstacleExpansion: 'none',
+  carpetEnabled: true, // false 则禁用地毯扩散
 });
 const MAX_INIT_ATTEMPTS = 40;
 
@@ -33,6 +34,8 @@ export class Board {
     this.grid = [];
     this.carpetGrid = [];
     this.streamGrid = [];
+    /** @type {Array<{col:number, dir:string}>} 溪流列配置 */
+    this.streams = [];
     this.maskGrid = [];
     this.lastSwap = null;
     this.ruleSet = { ...DEFAULT_RULE_SET };
@@ -51,6 +54,7 @@ export class Board {
 
   init(levelConfig = null) {
     this.maskGrid = this._buildMaskGrid(levelConfig);
+    this.streams = levelConfig?.streams || [];
 
     this.lastSwap = null;
     this.setRuleSet(levelConfig?.rules || null);
@@ -91,7 +95,7 @@ export class Board {
       for (let c = 0; c < this.cols; c++) {
         this.grid[r][c] = this.isPlayableCell(r, c) ? createNonMatchingTile(this, r, c) : null;
         this.carpetGrid[r][c] = false;
-        this.streamGrid[r][c] = false;
+        this.streamGrid[r][c] = null; // null = 无溪流, 'up'/'down' = 溪流方向
       }
     }
 
@@ -110,7 +114,7 @@ export class Board {
         }
 
         if (obs.type === 'stream') {
-          this.streamGrid[obs.r][obs.c] = true;
+          this.streamGrid[obs.r][obs.c] = obs.dir || 'down';
           continue;
         }
 
@@ -283,6 +287,48 @@ export class Board {
 
   shuffle() {
     return shuffle(this);
+  }
+
+  /**
+  /**
+   * 溪流移动系统 —— 每回合结束后，溪流路径上的图块沿方向移动一格
+   * 路径是有序的 [{r,c}] 数组，dir='down' 时从头到尾流动
+   * @returns {Array<{from:{r,c}, to:{r,c}}>} 移动记录
+   */
+  applyStreamFlow() {
+    if (!this.streams || this.streams.length === 0) return [];
+    const moves = [];
+
+    for (const stream of this.streams) {
+      const { path, dir } = stream;
+      if (!path || path.length < 2) continue;
+
+      if (dir === 'down') {
+        // 从路径末尾（出口）向头部（入口）逆序移动
+        // 末尾图块被"冲走"，头部生成新图块
+        for (let i = path.length - 1; i > 0; i--) {
+          const to = path[i];
+          const from = path[i - 1];
+          this.grid[to.r][to.c] = this.grid[from.r][from.c];
+          moves.push({ from: { r: from.r, c: from.c }, to: { r: to.r, c: to.c } });
+        }
+        // 入口（头部）生成新图块
+        const entry = path[0];
+        this.grid[entry.r][entry.c] = createNonMatchingTile(this, entry.r, entry.c);
+      } else {
+        // 向上：从路径头部向末尾正序移动
+        for (let i = 0; i < path.length - 1; i++) {
+          const to = path[i];
+          const from = path[i + 1];
+          this.grid[to.r][to.c] = this.grid[from.r][from.c];
+          moves.push({ from: { r: from.r, c: from.c }, to: { r: to.r, c: to.c } });
+        }
+        // 入口（末尾）生成新图块
+        const entry = path[path.length - 1];
+        this.grid[entry.r][entry.c] = createNonMatchingTile(this, entry.r, entry.c);
+      }
+    }
+    return moves;
   }
 
   runEndTurnRules() {

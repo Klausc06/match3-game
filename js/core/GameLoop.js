@@ -329,6 +329,22 @@ export class GameLoop {
       this.board.clearMatchFlags();
       this.board.runEndTurnRules();
 
+      // ── 溪流移动：整个回合结束后，溪流路径上图块沿方向移动一格 ──
+      if (!this._isSessionActive(sessionId)) return;
+      const streamMoves = this.board.applyStreamFlow();
+      if (streamMoves.length > 0) {
+        await this._waitFor(200, sessionId);
+        if (!this._isSessionActive(sessionId)) return;
+
+        // 溪流移动后检查是否产生新匹配
+        const streamMatches = this.board.findMatches();
+        if (streamMatches.length > 0) {
+          await this._processMatches(streamMatches, null, sessionId);
+          return;
+        }
+        this.board.clearMatchFlags();
+      }
+
       if (!this.board.hasValidMoves()) {
         this.stateMachine.transition(GameState.SHUFFLE);
         this.board.shuffle();

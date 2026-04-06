@@ -98,17 +98,19 @@ export function processDestruction(board, groups, powerUpTrigger = null) {
     hitAdjacentObstacles(board, r, c);
     removed.push({ r, c, color: tile.color });
 
-    // 地毯扩散
-    if (board.carpetGrid[r][c]) {
-      const targets = ORTHO
-        .map(([dr, dc]) => ({ r: r + dr, c: c + dc }))
-        .filter(p => board.isPlayableCell(p.r, p.c) && !board.carpetGrid[p.r][p.c]);
-      if (targets.length > 0) {
-        const t = targets[board.randomInt(targets.length)];
-        board.carpetGrid[t.r][t.c] = true;
+    // 地毯扩散（仅 carpetEnabled 时生效，如 home 主题）
+    if (board.ruleSet.carpetEnabled) {
+      if (board.carpetGrid[r][c]) {
+        const targets = ORTHO
+          .map(([dr, dc]) => ({ r: r + dr, c: c + dc }))
+          .filter(p => board.isPlayableCell(p.r, p.c) && !board.carpetGrid[p.r][p.c]);
+        if (targets.length > 0) {
+          const t = targets[board.randomInt(targets.length)];
+          board.carpetGrid[t.r][t.c] = true;
+        }
+      } else {
+        board.carpetGrid[r][c] = true;
       }
-    } else {
-      board.carpetGrid[r][c] = true;
     }
 
     const newPU = newPowerUps.find(p => p.r === r && p.c === c);

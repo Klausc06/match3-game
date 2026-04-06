@@ -41,7 +41,7 @@ import { UIManager } from './ui/UIManager.js';
 const board        = new Board(GameConfig.BOARD_ROWS, GameConfig.BOARD_COLS, GameConfig.COLOR_COUNT);
 const stateMachine = new StateMachine();
 const leaderboard  = new Leaderboard();
-const scoreManager = new ScoreManager();
+const scoreManager = new ScoreManager(board);
 const timerManager = new TimerManager(GameConfig.GAME_DURATION);
 const ui           = new UIManager();
 const runtimeSeed = (() => {
